@@ -1,0 +1,24 @@
+VmSize:Emulation is 1154646 4564the process of 234789imicking the outwardly observable behavior to match an existing target. The internal
+state of the emulation mechanism does not have to accurately reflect the internal state of the target which it is
+emulating.
+
+Simulation, on the other hand, involves modeling the underlying state of the target. The end result of a good
+simulation is that the simulation model will emulate the target which it is simulating.
+
+Ideally, you should be able to look into the simulation and observe properties that you would also see if you
+looked into the original target. In practice, there may some shortcuts to the simulation for performance reasons
+-- that is, some internal aspects of the simulation may actually be an emulation.
+
+MAME is an arcade game emulator; Hyperterm is a (not very good) terminal emulator. There's no need to model the
+arcade machine or a terminal in detail to get the desired emulated behavior.
+
+Flight Simulator is a simulator; SPICE is an electronics simulator. They model as much as possible every detail
+of the target to represent what the target does in reality.
+
+EDIT: Other responses have pointed out that the goal of an emulation is to able to substitute for the object it
+is emulating. That's an important point. A simulation's focus is more on the modelling of the internal state of
+the target -- and the simulation does not necessarily lead to emulation. In particular, a simulation may run far
+slower than real time. SPICE, for example, cannot substitue for an actual electronics circuit (even if assuming
+there was some kind of magical device that perfectly int
+
+
