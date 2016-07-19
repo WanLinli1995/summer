@@ -19,8 +19,6 @@ void search_filename(string route_name, string file_type)
   while((ptr = readdir(pDir))!=0)
   {
     all_name[num] = ptr->d_name;
-//    cout<<"find="<<
-//    size_type a = str[num].find(".");
 
     if(all_name[num].find(".")!=string::npos)
     {
