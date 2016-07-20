@@ -32,6 +32,40 @@ int parseLine(char* line){//Convert the string "** Kb" to an number
     return i;
 }
 
+bool IsType(string name, string type)
+{
+  int num_n = name.size();
+  int num_t = type.size();
+//  cout<<"num_n="<<num_n<<endl;
+//  cout<<"num_t="<<num_t<<endl;
+//  string all("all");
+  if(type.compare("all")==0)
+  {
+  //  if((type[0] == 'a')&&(type[1] == 'l')&&(type[2] == 'l'))
+    return 1;
+  }
+  int j = num_t -1;
+  for(int i = num_n-1; j >=0; i--, j--)
+  {
+//    cout<<"name[i]="<<name[i]<<endl;
+//    cout<<"type[j]="<<type[j]<<endl;
+    if(name[i] != type[j])break;
+  }
+ // cout<<"j="<<j<<endl;
+  if(j == -1)return 1;
+  else return 0;
+}
+
+string name_list[100];
+int name_num = 0;
+
+void clear_nstr()
+{
+  for (int i = 0; i < name_num; i++)
+  {
+    name_list[i] = "\0";
+  }
+}
 
 //input the route and output all the files in the route(including its sub-route)
 void search_filename(string route_name, string file_type)
@@ -39,31 +73,33 @@ void search_filename(string route_name, string file_type)
   DIR* pDir = opendir(route_name.c_str());
   if (opendir(route_name.c_str())==NULL)return;
   struct dirent* ptr;
-  int num = 0;
-  string all_name[100];
+//  int num = 0;
+//  string all_name[100];
   string des_type_name[100];
   size_t suffix_pos;
 
   while((ptr = readdir(pDir))!=0)
   {
-    all_name[num] = ptr->d_name;
+    string s = ptr->d_name;
 
-    if(all_name[num].find(".")!=string::npos)
+    if(s.find(".")!=string::npos)
     {
-    suffix_pos = all_name[num].find_last_of(".");
- //   cout<<"filename_size="<<all_name[num].size()<<endl;
- //   cout<<"suffix_pos="<<suffix_pos<<endl;
-//    cout<<"filename:"<<ptr->d_name<<endl<<endl;
-    cout<<ptr->d_name<<endl;
+      if(IsType(ptr->d_name, file_type))
+      {
+        name_list[name_num] = ptr->d_name;
+//    suffix_pos = name_list[name_num].find_last_of(".");
+        cout<<ptr->d_name<<endl;
+        name_num++;
+      }
     }
 
     else
     {
  //     cout<<"this is a direction, not a file"<<endl;
-      cout<<endl<<"the following files are in the subroute: "<<route_name+"/"+all_name[num]<<endl;
-      search_filename(route_name+"/"+all_name[num], file_type);
-   }
-    num++;
+      cout<<endl<<"Sub-route: "<<route_name+"/"+name_list[name_num]<<endl;
+      search_filename(route_name+"/"+ptr->d_name, file_type);
+    }
+//    name_num++;
   }
   closedir(pDir);
 //  return 0;
@@ -302,7 +338,7 @@ int main() {
   int num_r, num_p, num_f;
   cout<<"Welcome to the emulator!"<<endl;
   cout<<"Please input the memory amount(Kb):"<<endl;
-  cin>>memory;
+  cin>>mem_amount;
   cout<<"Please input the CPU time expected(ms):"<<endl;
   cin>>CPU_time;
   cout<<"How many file route do you want to access?"<<endl;
@@ -311,14 +347,20 @@ int main() {
   {
     string route_name;
     string file_type;
+//    name_list = NULL;
+//    name_num=0;
     for(int i = 0; i < num_r; i++)
     {
+//      name_list = 0;
+      name_num=0;
+      clear_nstr();//clear the name list 
       cout<<"input route"<<i<<" name:";
       cin>>route_name;
-      cout<<"What kind of files in this route do you want to access?(.txt for example)"<<endl;
+      cout<<"What kind of files in this route do you want to access?(.txt and all for example)"<<endl;
       cin>>file_type;
-      
+      search_filename(route_name, file_type);
     }
+//    for(int i = 0; i < name_num; i++)cout<<"\nnamelist;"<<name_list[i]<<endl;
   }
 //route search section
 /*
@@ -338,6 +380,7 @@ int main() {
 
 
 //IO sections
+/*
 const int Write_line_num = 5;
   string fname_in = "/home/home3/linliwan/benchmark/summer/in.txt";
   string fname_out = "out.txt";
@@ -345,6 +388,7 @@ const int Write_line_num = 5;
   string str_out;
   ReadWBW(str_in, fname_in);
   cout<<str_in[0]<<endl;
+*/
 //  ReadLBL(str_in, fname_in);
 //  WriteLBL(str_in, fname_out, Write_line_num);
 //  WriteOT(str_in[2], fname_out);
