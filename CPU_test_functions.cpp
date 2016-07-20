@@ -40,7 +40,7 @@ void TestAddSub(const char* name)
   Type v8 = (Type)(rand() % 256)/16 + 1;
   Type v9 = (Type)(rand() % 256)/16 + 1;
   time_t start = clock();//
-  double t1 = mygettime();//current tiem in seconds
+  double t1 = mygettime();//current tiem in ms
   for (size_t i = 0; i < 100000000; ++i) {
     v += v0;//multiple operation to be stable?
     v -= v1;

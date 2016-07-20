@@ -14,6 +14,8 @@
 #include <dirent.h>
 #include<unistd.h>
 #include <string.h>
+#include <sys/sysinfo.h>
+#include <malloc.h>
 
 
 using namespace std;
@@ -116,7 +118,7 @@ void ReadWBW(string* str, string fname)
   ifstream fin(fname.c_str());
   if(!fin.is_open())
   {
-    cout<<"Error opening file";
+//    cout<<"Error opening file";
     exit(1);
   }
 
@@ -143,7 +145,7 @@ void ReadLBL(string* str, string fname)
   int i = 0;
   while(getline(fin, str[i]))
   {
-    cout<<"Read from file:"<<str[i]<<endl;
+//    cout<<"Read from file:"<<str[i]<<endl;
     i++;
   }
   fin.close();
@@ -162,7 +164,7 @@ void WriteLBL(string* str, string fname, int num)
   for(int i = 0; i < num; i++)
   {
     fout << str[i]<<"\n";
-    cout<<"Write into file:"<<str[i]<<endl;
+//    cout<<"Write into file:"<<str[i]<<endl;
   }
   fout.close();
 }
@@ -170,7 +172,8 @@ void WriteLBL(string* str, string fname, int num)
 //Write into file(one time)
 void WriteOT(string str, string fname)
 {
-  ofstream fout(fname.c_str());
+  ofstream fout(fname.c_str(), ios::ate | ios::out);
+//  ofstream fout(fname.c_str());
   if(!fout.is_open())
   {
     cout<<"Error opening file";
@@ -178,20 +181,22 @@ void WriteOT(string str, string fname)
   }
 
   fout << str;
-  cout<<"Write into file:"<<str<<endl;
+//  cout<<"Write into file:"<<str<<endl;
   fout.close();
 }
 
 //from one file to another file for specific number of lines
-void ReadAndWrite(string fname_in, string fname_out, int num_limit)
+void ReadAndWrite(string fname_in, string fname_out)
 {
   ifstream fin(fname_in.c_str());
+//  ifstream fin(fname_in.c_str());
   if(!fin.is_open())
   {
     cout<<"Error opening source file";
     exit(1);
   }
-  ofstream fout(fname_out.c_str());
+//  ofstream fout(fname_out.c_str());
+  ofstream fout(fname_out.c_str(), ios::ate | ios::out);
   if(!fout.is_open())
   {
     cout<<"Error opening destinate file";
@@ -202,12 +207,12 @@ void ReadAndWrite(string fname_in, string fname_out, int num_limit)
   int i = 0;
   while(getline(fin, str))
   {
-    cout<<"Write from file:"<<fname_in<<"to"<<fname_out<<":"<<str<<endl;
+//    cout<<"Write from file:"<<fname_in<<"to"<<fname_out<<":"<<str<<endl;
     fout << str <<"\n";
     i++;
-    if(i == num_limit)break;
+//    if(i == num_limit)break;
   }
-  if(i < num_limit)cout<<"The input line number is larger than the source file, we can only write "<<i<<"lines"<<endl;
+//  if(i < num_limit)cout<<"The input line number is larger than the source file, we can only write "<<i<<"lines"<<endl;
   fin.close();
   fout.close();
 }
@@ -333,25 +338,56 @@ void TestDiv(const char* name)
 }
 
 int main() {
+  //Memory test
+  struct sysinfo memInfo;
+  sysinfo (&memInfo);
+  long long totalVirtualMem = memInfo.totalram;
+  totalVirtualMem += memInfo.totalswap;
+  totalVirtualMem *= memInfo.mem_unit;
+
+  //Total Physical Memory(RAM):
+  long long totalPhysMem = memInfo.totalram;
+  totalPhysMem *= memInfo.mem_unit;
+
+  //Virtual Memory currently used:
+  long long virtualMemUsed = memInfo.totalram - memInfo.freeram;
+  virtualMemUsed += memInfo.totalswap - memInfo.freeswap;
+  virtualMemUsed *= memInfo.mem_unit;
+
+  //Physical Memory currently used:
+  long long physMemUsed = memInfo.totalram - memInfo.freeram;
+  physMemUsed *= memInfo.mem_unit;
+
+  cout<<"totalram = "<<memInfo.totalram/1024<<endl;
+  cout<<"totalswap = "<<memInfo.totalswap/1024<<endl;
+  cout<<"freeram = "<<memInfo.freeram/1024<<endl;
+  cout<<"freeswap = "<<memInfo.freeswap/1024<<endl;
+  cout<<"Total Virtual Memory = "<<totalVirtualMem/1024<<endl;
+  cout<<"Total Physical Memory = "<<totalPhysMem/1024<<endl;
+  cout<<"Virtual Memory currently used = "<<virtualMemUsed/1024<<endl;
+  cout<<"hysical Memory currently used = "<<physMemUsed/1024<<endl;
+//  cout<<"mum unit="<<memInfo.mem_unit/1024<<endl;
+  int* p = (int*)malloc(100000000);
+
   long long mem_amount;
   long long CPU_time;
   int num_r, num_p, num_f;
+  time_t start = clock();//
+  double t1 = mygettime();//current tiem in ms
   cout<<"Welcome to the emulator!"<<endl;
-  cout<<"Please input the memory amount(Kb):"<<endl;
+  cout<<"Please input the memory amount(unit):"<<endl;
   cin>>mem_amount;
   cout<<"Please input the CPU time expected(ms):"<<endl;
   cin>>CPU_time;
-  cout<<"How many file route do you want to access?"<<endl;
+  cout<<"How many routes do you want to access?"<<endl;
   cin>>num_r;
-  if(num_r!=0)
+  if(num_r>0)
   {
     string route_name;
     string file_type;
-//    name_list = NULL;
-//    name_num=0;
+
     for(int i = 0; i < num_r; i++)
     {
-//      name_list = 0;
       name_num=0;
       clear_nstr();//clear the name list 
       cout<<"input route"<<i<<" name:";
@@ -359,20 +395,37 @@ int main() {
       cout<<"What kind of files in this route do you want to access?(.txt and all for example)"<<endl;
       cin>>file_type;
       search_filename(route_name, file_type);
+
+      //read and then wirte
+      for(int i = 0; i < name_num; i++)
+      {
+        ReadAndWrite(name_list[i].c_str(), "/home/home3/linliwan/benchmark/out.txt");
+      }
     }
-//    for(int i = 0; i < name_num; i++)cout<<"\nnamelist;"<<name_list[i]<<endl;
+
   }
+  else if(num_r == 0){}
+  else
+  {
+    cout<<"Input Error!"<<endl;
+    return 0;
+  }
+  
+  cout<<"totalram = "<<memInfo.totalram/1024<<endl;
+  cout<<"totalswap = "<<memInfo.totalswap/1024<<endl;
+  cout<<"freeram = "<<memInfo.freeram/1024<<endl;
+  cout<<"freeswap = "<<memInfo.freeswap/1024<<endl;
+
+  time_t end = clock();//
+  printf("CPU time: %f\n", double(end-start)*1000 / CLOCKS_PER_SEC);
+  printf("total time: %f\n", mygettime() - t1);
+
+
+  free(p);
 //route search section
 /*
   time_t start = clock();//
   double t1 = mygettime();//current tiem in seconds
-  string route_name;
-  string file_type;
-  cout<<"Please input the route:";
-  cin>>route_name;
-  cout<<"Please input the file type you want:(.txt/.cpp and so on):";
-  cin>>file_type;
-  search_filename(route_name, file_type);
   time_t end = clock();
   printf("route search CPU time: %f\n",  double(end-start)*1000 / CLOCKS_PER_SEC);
   printf("route search total time: %f\n",  mygettime() - t1);
