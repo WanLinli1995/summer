@@ -1,4 +1,4 @@
-VmSize:Emulation is 1154646 4564the process of 234789imicking the outwardly observable behavior to match an existing target. The internal
+is 1154646 4564the process of 234789imicking the outwardly observable behavior to match an existing target. The internal
 state of the emulation mechanism does not have to accurately reflect the internal state of the target which it is
 emulating.
 

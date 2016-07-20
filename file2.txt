@@ -1,0 +1,2 @@
+File2 opened
+Hello, I am file2

@@ -201,7 +201,6 @@ void getFiles(string path, vector<string>& files )
 
 int main(void)
 {
-//  ReadWBW();
   const int Write_line_num = 5;
   string fname_in = "in.txt";
   string fname_out = "out.txt";
