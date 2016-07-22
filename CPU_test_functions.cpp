@@ -158,13 +158,13 @@ void TestMul(const char* name)
 int main() {
   time_t start = clock();//
   double t1 = mygettime();
-  TestAddSub< short >("short");
+  TestAddSub< int >("int");
   time_t end = clock();//
   printf("Add CPU time: %f\n", double(end-start)*1000 / CLOCKS_PER_SEC);
   printf("Add total time: %f\n", mygettime() - t1);
 
-  TestMul< short >("short");
-  TestDiv< short >("short");
+  TestMul< int >("int");
+  TestDiv< int >("int");
 //  my_test< long >("long");
 //  my_test< long long >("long long");
 //  my_test< float >("float");
