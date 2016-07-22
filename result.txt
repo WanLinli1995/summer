@@ -1,0 +1,30 @@
+linliwan@catwoman> g++ emulator.cpp
+linliwan@catwoman> ./a.out
+Welcome to the emulator!
+totalram = 8131868
+totalswap = 8342524
+freeram = 2753392
+freeswap = 8342524
+Total Virtual Memory = 16474392
+Total Physical Memory = 8131868
+Virtual Memory currently used = 5378476
+hysical Memory currently used = 5378476
+Please input the memory amount(unit):
+1
+Please input the CPU time expected(ms):
+1
+How many routes do you want to access?
+1
+input route0 name:/home/home3/linliwan/benchmark/summer
+What kind of files in this route do you want to access?(.txt and all for example)
+.txt
+in.txt
+Instructions.txt
+file0.txt
+file1.txt
+file2.txt
+totalram = 8131868
+totalswap = 8342524
+freeram = 2753392
+freeswap = 8342524
+
