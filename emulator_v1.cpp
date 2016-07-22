@@ -16,6 +16,7 @@
 #include <string.h>
 #include <sys/sysinfo.h>
 #include <malloc.h>
+#include <sys/resource.h>
 using namespace std;
 
 bool PostfixIsMatch(string dest, string postfix)
@@ -33,7 +34,6 @@ bool PostfixIsMatch(string dest, string postfix)
 
 int Unit(string data)//to identify KB, MB, GB
 {
-//	cout<<"mem="<<data<<endl;
 	if(PostfixIsMatch(data, "KB") == 1)return 1;
 	else if(PostfixIsMatch(data, "MB") == 1)return 1024;
  	else if(PostfixIsMatch(data, "GB") == 1)return (1024 * 1024);
@@ -43,18 +43,6 @@ int Unit(string data)//to identify KB, MB, GB
         else if(PostfixIsMatch(data, "h") == 1)return (1000 * 60 * 60);
   	else{return 1;}//Error condition
 }
-
-/*
-int TimeUnit(string time)//to identify KB, MB, GB
-{
-        cout<<"time="<<time<<endl;
-        if(PostfixIsMatch(time, "ms") == 1)return 1;
-        else if(PostfixIsMatch(time, "s") == 1)return 1000;
-        else if(PostfixIsMatch(time, "min") == 1)return (1000 * 60);
-	else if(PostfixIsMatch(time, "h") == 1)return (1000 * 60 * 60);
-        else{return 1;}//Error condition
-}
-*/
 
 int ConvertToInt(char* data_size)
 {
@@ -69,7 +57,6 @@ int ConvertToInt(char* data_size)
 		else break;
 	}
 	data_size[i] = '\0';
-//	cout<<"num = "<<atoi(data_size) * unit<<endl;
 	return atoi(data_size) * unit;
 }
 
@@ -79,19 +66,22 @@ void InputError()
 	cout<<"Arguments should be './a.out <input_size>KB/MB/GB <output_size>KB/MB/GB '"<<endl;
 }
 
-bool ReadW(char* str, string fname, int start_position, int size)//return 1:the file has been read off
+bool ReadW(char* str, string fname, int start_position, int size, int interval)//return 1:the file has been read off
 {
 	ifstream fin(fname.c_str());
 	if(!fin.is_open()) exit(1);
 	int i = 0;
+	char* head = str;
 	cout<<"in_func"<<endl;
 	fin.seekg(start_position, ios::beg);
 	string temp;
-	while(fin >> noskipws >> str[i] && i < size)//Don't egnore the space
+
+	while((fin >> noskipws >> (*str)) && (i < size))
 	{
+		str = str + interval;
 		i++;
 	}
-	cout<<"fin.efo()= "<<fin.eof()<<endl;
+//	cout<<"fin.efo()= "<<fin.eof()<<endl;
 	return fin.eof();
 }
 
@@ -118,8 +108,6 @@ void RunCPU()//nearly and always less than 1ms
 	int n7 = (int)(rand() % 256);
 	int n8 = (int)(rand() % 256);
 	int n9 = (int)(rand() % 256);
-//	int n10 = (int)(rand() % 256);
-//	int n11 = (int)(rand() % 256);
 
 	for (int i = 0; i <20000; i++)
 	{
@@ -133,19 +121,20 @@ void RunCPU()//nearly and always less than 1ms
 		sum += n7;
 		sum += n8;
 		sum += n9;
-	//	sum += n10;
-	//	sum += n11;
 	}
 }
+
+void Function(){}//To expend
+
 
 int main(int argc, char* argv[])
 {
 	time_t start = clock();
         double t1 = GetTime();
-	time_t end;
 	double cpu_time_used;
 	double total_time_used;
 	const int KB = 1024;
+
 	int unit_KB_size = 64;
 	int unit_B_size = unit_KB_size * KB;
 	const int page_size = 4096;//bytes
@@ -159,48 +148,52 @@ int main(int argc, char* argv[])
 	p_start = (char*)malloc(memory_size * KB);
 	char* p = p_start;//p will move while p_start never move
 	int flag = 0;
-	int start_position;
+	int start_position = 0;
 
 	//Assume that the files are larger than 64KB
 	//Assume memory is certainly larger than 64KB
-	int interval = memory_size / unit_KB_size;//The interval to store the content into the memory
+	int interval = memory_size / unit_KB_size / input_file_num;//The interval to store the content into the memory
 	while(interval > page_size)//To make sure every page is used
 	{
 		unit_KB_size *= 2;
-		interval = memory_size / unit_KB_size;
+		interval = memory_size / unit_KB_size / input_file_num;
 	}
-
+	int j = 0;
 	do
 	{
+		j++;
+	//	flag = 0;
 		cout<<"input_file_num="<<input_file_num<<endl;
-		for(int i = 4; i < input_file_num + 4; i++)
+		p = p_start;
+		for(int i = 5; i < input_file_num + 5; i++)
 		{
-			cout<<" i= "<<i<<endl;
-			start_position = unit_B_size * (i - 4) + 1;
 			string name = argv[i];
-			if(name.compare("finished") == 0)continue;
-			if (ReadW(p, argv[i], start_position, unit_B_size) == 1)//Read 64KB for one time
+			if(name.compare("finished") == 0)continue;//If a file has been read off, dont't open it any more
+			if (ReadW(p, argv[i], start_position, unit_B_size, interval) == 1)//Read 64KB for one time
 			{
-				flag++;
-				cout<<argv[i]<<"has been read off"<<endl;
+			//	cout<<"flag+1"<<endl;
+				flag = flag + 1;
+			//	cout<<"flags = "<<flag<<endl;
+				cout<<argv[i]<<" has been read off"<<endl;
 				argv[i]=(char*)"finished";
+				
 			}
-			cout<<"flag="<<flag<<endl;
+			p = p + unit_B_size * interval;
 		}
-		flag = 0;
-		//then do some operations
-		for(int i = 0; i<input_file_num * unit_B_size; i++)cout<<p[i];
-		cout<<endl;
+		start_position += unit_B_size;
+		
+		//then do some operations:
+		Function();
+
+		cout<<"flag = "<<flag<<endl;
+		cout<<"num = "<<input_file_num<<endl;
 	}while(flag!=input_file_num);//only if all the files have been read off, flag = input_file_num 
 
-/*	cout<<argv[4]<<endl;
-	ReadW(p, argv[4], 0, unit_B_size);
-	for(int i = 0; i<10; i++)cout<<p[i];
-		cout<<endl;
-*/
-	free(p);
-        p = NULL;
-//	end = clock();
+	free(p_start);
+        p_start = NULL;
+	p = NULL;
+	
+	//Consume CPU
 	cpu_time_used = double(clock() - start) * 1000 / CLOCKS_PER_SEC;
 	while((cpu_time_used < CPU_time))
 	{
@@ -211,5 +204,9 @@ int main(int argc, char* argv[])
 		cpu_time_used = double(clock() - start) * 1000 / CLOCKS_PER_SEC;		
 	}
 	cout<<"CPU consumption time is:"<<cpu_time_used<<"ms"<<endl;
+//	struct rusage rused;
+ //       int status = 0;
+//	int memory_usage = rused.ru_minflt * ( page_size / 1024 );
+//        printf("Memory used: %d KB \n", memory_usage);
 	return 0;
 }
