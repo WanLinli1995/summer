@@ -72,7 +72,6 @@ bool ReadW(char* str, string fname, int start_position, int size, int interval)/
 	if(!fin.is_open()) exit(1);
 	int i = 0;
 	char* head = str;
-	cout<<"in_func"<<endl;
 	fin.seekg(start_position, ios::beg);
 	string temp;
 
@@ -162,8 +161,7 @@ int main(int argc, char* argv[])
 	do
 	{
 		j++;
-	//	flag = 0;
-		cout<<"input_file_num="<<input_file_num<<endl;
+//		cout<<"input_file_num="<<input_file_num<<endl;
 		p = p_start;
 		for(int i = 5; i < input_file_num + 5; i++)
 		{
@@ -171,9 +169,7 @@ int main(int argc, char* argv[])
 			if(name.compare("finished") == 0)continue;//If a file has been read off, dont't open it any more
 			if (ReadW(p, argv[i], start_position, unit_B_size, interval) == 1)//Read 64KB for one time
 			{
-			//	cout<<"flag+1"<<endl;
 				flag = flag + 1;
-			//	cout<<"flags = "<<flag<<endl;
 				cout<<argv[i]<<" has been read off"<<endl;
 				argv[i]=(char*)"finished";
 				
@@ -184,9 +180,6 @@ int main(int argc, char* argv[])
 		
 		//then do some operations:
 		Function();
-
-		cout<<"flag = "<<flag<<endl;
-		cout<<"num = "<<input_file_num<<endl;
 	}while(flag!=input_file_num);//only if all the files have been read off, flag = input_file_num 
 
 	free(p_start);
