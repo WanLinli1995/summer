@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 	//Assume that the files are larger than 64KB
 	//Assume memory is certainly larger than 64KB
 	int interval = memory_size / unit_KB_size / input_file_num;//The interval to store the content into the memory
-	
+/*	
 	if(file_size_min < 64)//cases that cannot take up all the pages after reading all files once
 	{
 		for(int i = 0; i < memory_size * KB; i++)
@@ -165,20 +165,27 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	while(interval > page_size)//To make sure every page is used
+*/	while(interval > page_size)//To make sure every page is used
 	{
 		unit_KB_size *= 2;
 		interval = memory_size / unit_KB_size / input_file_num;
 	}
 
-	while(file_size_max / unit_KB_size > 400)//To control total time(avoid low reading efficiency)
+/*	while(file_size_max / unit_KB_size > 400)//To control total time(avoid low reading efficiency)
 	{
 		unit_KB_size *= 2;
 		interval = memory_size / unit_KB_size / input_file_num;
 	}
-
+*/
 	int j = 0;
-	if(memory_size > 1024) memory_size -= 1024;//To adjust memory offset
+	cout << "mem = "<<memory_size;
+	if(memory_size > 1100) 
+        { 
+                memory_size -= 1100;//To adjust memory offset
+                interval = memory_size / unit_KB_size / input_file_num;
+        }
+        else {cout << "Memory is not enough to run the process" << endl;return 0;}
+
 	do
 	{
 		j++;
