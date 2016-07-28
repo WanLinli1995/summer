@@ -47,7 +47,6 @@ int Unit(string data)//to identify KB, MB, GB
 int ConvertToInt(char* data_size)
 {
 	int unit = Unit(data_size);
-	cout<<data_size<<"'s unit:"<<unit<<endl;
 	string temp = data_size;
  	int lenth = strlen(data_size);
  	const char* p = data_size;
@@ -133,7 +132,6 @@ void WriteFromEnd(string fname, int size)
 		exit(1);
 	}
 	
-//	fout.seekg(0, ios::end);
 	srand((unsigned)time(NULL));
 	for(int i = 0; i < size; i++)
 	{
@@ -252,29 +250,32 @@ int main(int argc, char* argv[])
 
 
 	//output files
-	int size;
 	int j2 = 0;
 	int left;
 	int flag2 = 0;
+	int out_file_size[output_file_num];
+	int z = 0;
+	for(int i = 9 + input_file_num; i < argc; i = i+2)
+	{
+		out_file_size[z++] = ConvertToInt(argv[i+1]);
+	}
+
 	do
 	{
+		int t = 0;
 		for(int i = 9 + input_file_num; i < argc; i = i+2)
 		{
 			string name2 = argv[i];
-			cout << "size = "<<argv[i+1]<<endl;
-			size = ConvertToInt(argv[i+1]);
-			cout<<"size="<<size<<endl;
 			if(name2.compare("finished") == 0)continue;//If a file finished writing , don't open it any more	
-			left = size - j2 * w_unit;
+			left = out_file_size[t++] - j2 * w_unit;
 			if(left < w_unit)
 			{
 				WriteFromEnd(argv[i], left);
                                 flag2 = flag2 + 1;
                                 cout<<argv[i]<<" finished writing"<<endl;
                                 argv[i]=(char*)"finished";
-				continue;
 			}
-			WriteFromEnd(argv[i], w_unit);
+			else WriteFromEnd(argv[i], w_unit);
 		}
 		j2++;
 	}while(flag2 != output_file_num);
