@@ -180,12 +180,13 @@ int main(int argc, char* argv[])
 	//Assume that the files are larger than 64KB
 	//Assume memory is certainly larger than 64KB
 	int interval = memory_size / unit_B_size / input_file_num;//The interval to store the content into the memory
-//	getrusage(RUSAGE_SELF, &rused);
+	getrusage(RUSAGE_SELF, &rused);
 	long start_mem = rused.ru_maxrss;
+	int offset = (int)start_mem;
 
-	if(memory_size > 1100 * KB)
+	if(memory_size > start_mem)
 	{
-		memory_size -= 1100 * KB;//To adjust memory offset
+		memory_size -= start_mem;//To adjust memory offset
 		interval = memory_size / unit_B_size / input_file_num;
 	}
         else {cout << "Memory is not enough to run the process" << endl;return 0;}
@@ -250,23 +251,22 @@ int main(int argc, char* argv[])
 
 
 	//output files
-	int j2 = 0;
-	int left;
-	int flag2 = 0;
+	int j2 = 0;//To record the times of writing the files
+	int left;//To record the amount of data left each file
+	int flag2 = 0;//To record how many files have been finished
 	int out_file_size[output_file_num];
-	int z = 0;
+	int z = 0;//to match the file size and file name
 	for(int i = 9 + input_file_num; i < argc; i = i+2)
 	{
 		out_file_size[z++] = ConvertToInt(argv[i+1]);
 	}
-
 	do
 	{
 		int t = 0;
 		for(int i = 9 + input_file_num; i < argc; i = i+2)
 		{
 			string name2 = argv[i];
-			if(name2.compare("finished") == 0)continue;//If a file finished writing , don't open it any more	
+			if(name2.compare("finished") == 0)continue;//If a file is finished , don't open it any more	
 			left = out_file_size[t++] - j2 * w_unit;
 			if(left < w_unit)
 			{
