@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
 		unit_KB_size *= 2;
 		unit_B_size *= 2;
 	}
-	cout <<"unit_KB_size"<< unit_KB_size<<endl;
+//	cout <<"unit_KB_size"<< unit_KB_size<<endl;
 	getrusage(RUSAGE_SELF, &rused);
         printf("mem usage before loop: %ld KB\n", rused.ru_maxrss);
 
@@ -219,10 +219,11 @@ int main(int argc, char* argv[])
 		//then do operations to the input data
 		Function();
 	//	printf("exe time%d: %f\n",j, GetTime() - t1);
+//		cout << "j="<<j<<endl;
 	}while(flag!=input_file_num);//only if all the files have been read off, flag = input_file_num 
 
 
-
+/*
 	for(long i = 0; i <= memory_size;)
 	{
 		*(p_start + i) = 'a';//fill all the page with minimum cost
@@ -234,7 +235,7 @@ int main(int argc, char* argv[])
         p_start = NULL;
 	p = NULL;
 
-
+*/
 	//output files
 	int j2 = 0;//To record the times of writing the files
 	int left;//To record the amount of data left each file
@@ -265,6 +266,18 @@ int main(int argc, char* argv[])
 		j2++;
 	}while(flag2 != output_file_num);
 
+	cout << "finish reading and writing!"<<endl;
+
+	for(long i = 0; i <= memory_size;)
+        {
+                *(p_start + i) = 'a';//fill all the page with minimum cost
+                i += page_size;
+        }
+
+
+        free(p_start);
+        p_start = NULL;
+        p = NULL;
 	
 	//Consume CPU
 	cpu_time_used = double(clock() - start) * 1000 / CLOCKS_PER_SEC;
