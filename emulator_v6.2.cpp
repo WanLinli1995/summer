@@ -1,0 +1,272 @@
+#include <stdio.h>
+#ifdef _WIN32
+#include <sys/timeb.h>
+#else
+#include <sys/time.h>
+#endif
+#include <time.h>
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <unistd.h>
+#include <fstream>
+#include <sys/types.h>
+#include <dirent.h>
+#include<unistd.h>
+#include <string.h>
+#include <sys/sysinfo.h>
+#include <malloc.h>
+#include <sys/resource.h>
+using namespace std;
+
+bool PostfixIsMatch(string dest, string postfix)
+{
+	int size_d = dest.size();
+	int size_s = postfix.size();
+	int j = size_s - 1;
+	for(int i = size_d - 1; j >= 0; i--, j--)
+	{
+		if(dest[i] != postfix[j])break;
+	}
+	if(j == -1)return 1;
+	else return 0;
+}   
+
+int Unit(string data)//to identify KB, MB, GB
+{
+	if(PostfixIsMatch(data, "KB") == 1)return 1024;
+	else if(PostfixIsMatch(data, "MB") == 1)return (1024 * 1024);
+ 	else if(PostfixIsMatch(data, "GB") == 1)return (1024 * 1024 * 1024);
+	else if(PostfixIsMatch(data, "ms") == 1)return 1;
+        else if(PostfixIsMatch(data, "s") == 1)return 1000;
+        else if(PostfixIsMatch(data, "min") == 1)return (1000 * 60);
+        else if(PostfixIsMatch(data, "h") == 1)return (1000 * 60 * 60);
+  	else{return 1;}//Byte
+}
+
+long ConvertToInt(char* data_size)
+{
+	int unit = Unit(data_size);
+	string temp = data_size;
+ 	int lenth = strlen(data_size);
+ 	const char* p = data_size;
+	int i;
+	for(i = 0; i < lenth; i++)
+	{
+		if(data_size[i] >= '0' && data_size[i] <= '9'){}
+		else break;
+	}
+	data_size[i] = '\0';
+	return (long)atoi(data_size) * (long)unit;
+}
+
+
+void InputError()
+{
+	cout<<"Arguments should be './a.out <input_size>KB/MB/GB <output_size>KB/MB/GB '"<<endl;
+}
+
+bool ReadW(char* str, string fname, int start_position, int size)//return 1:the file has been read off
+{
+	ifstream fin;
+	fin.open(fname.c_str());
+	if(!fin.is_open()) exit(1);
+	fin.seekg(start_position, ios::beg);
+	fin.read(str, size);
+	return fin.eof();
+}
+
+double GetTime()//return ms
+{
+	struct timeval tv;
+	if(gettimeofday(&tv, 0) < 0) //the second parameter is timezone
+	{
+		perror("oops");//mistake output
+	}
+	return (double)tv.tv_sec*1000 + (0.001 * (double)tv.tv_usec);
+}
+
+void RunCPU()//nearly and always less than 1ms
+{
+	int sum = 0;
+	int n0 = (int)(rand() % 256);//Use random numbers to avoid loop unroll optimization
+	int n1 = (int)(rand() % 256);
+	int n2 = (int)(rand() % 256);
+	int n3 = (int)(rand() % 256);
+	int n4 = (int)(rand() % 256);
+	int n5 = (int)(rand() % 256);
+	int n6 = (int)(rand() % 256);
+	int n7 = (int)(rand() % 256);
+	int n8 = (int)(rand() % 256);
+	int n9 = (int)(rand() % 256);
+
+	for (int i = 0; i <20000; i++)
+	{
+		sum += n0;
+		sum += n1;
+		sum += n2;
+		sum += n3;
+		sum += n4;
+		sum += n5;
+		sum += n6;
+		sum += n7;
+		sum += n8;
+		sum += n9;
+	}
+}
+
+void WriteFromEnd(string fname, int size)
+{
+	char temp;
+	ofstream fout(fname.c_str(), ios::app);
+	if(!fout.is_open())
+	{
+		cout<<"Error opening file";
+		exit(1);
+	}
+	
+	srand((unsigned)time(NULL));
+	for(int i = 0; i < size; i++)
+	{
+		temp = 'a' + rand() % 26;
+                fout << temp;
+	}
+	fout.close();
+}
+
+void Function(){}//To expend
+
+
+int main(int argc, char* argv[])
+{
+	struct rusage rused;
+	time_t start = clock();
+        double t1 = GetTime();
+	double cpu_time_used;
+	double total_time_used;
+	const int B = 1;
+	const int KB = 1024 * B;
+	const int MB = 1024 * KB;
+	const int w_unit = 64 * KB;
+	int unit_KB_size = 64;
+	int unit_B_size = unit_KB_size * KB;
+	const int page_size = 4 * KB;//bytes
+	int input_file_num = atoi(argv[1]);
+	int output_file_num = atoi(argv[2]);
+	long memory_size = ConvertToInt(argv[3]);//return KB memory
+	int file_size_max = ConvertToInt(argv[4]);
+	int exe_time = ConvertToInt(argv[5]);
+	int CPU_time = ConvertToInt(argv[6]);
+	char** p_input_file = argv + 7;
+        char** p_output_file = argv+ 7 +input_file_num;
+	char *p_head = NULL;
+	p_head = (char*)malloc(memory_size * (long)B);
+	char* p = p_head;//p will move while p_start never move
+	getrusage(RUSAGE_SELF, &rused);
+	long start_mem = rused.ru_maxrss;
+	long input_mem = memory_size;
+	cout<<"mem input="<<(memory_size / 1024)<<endl;
+	if(memory_size > 1137*KB)
+        {
+                memory_size -= 1137 * KB;//To adjust memory offset
+        }
+        else
+	{
+		cout << "Memory is not enough to run the process" << endl;
+		return 0;
+	}
+	
+	if(memory_size < unit_B_size)unit_B_size = memory_size;	//cases where memory is too tight
+
+	while(file_size_max / unit_B_size > 400)//To control total time(avoid low reading efficiency)
+	{
+		unit_KB_size *= 2;
+		unit_B_size *= 2;
+	}
+
+	int flag = 0;
+	int start_position = 0;
+	do
+	{
+		p = p_head;//point back to the head of the memory(malloc)
+		for(int i = 7; i < input_file_num + 7; i++)
+		{
+			string name = argv[i];
+			if(name.compare("finished") == 0)continue;//If a file has been read off, dont't open it any more
+			if (ReadW(p, argv[i], start_position, unit_B_size) == 1)//Read a proper amount of data like 64KB once
+			{
+				flag = flag + 1;
+				cout<<argv[i]<<" has been read off"<<endl;
+				argv[i]=(char*)"finished";
+				
+			}
+			p = p + unit_B_size;
+		}
+		start_position += unit_B_size;
+
+		//then do operations to the input data
+		Function();
+	}while(flag!=input_file_num);//only if all the files have been read off, flag = input_file_num 
+
+
+	//output files
+	int j = 0;//To record the times of writing the files
+	int left;//To record the amount of data left each file
+	int flag2 = 0;//To record how many files have been finished
+	int out_file_size[output_file_num];
+	int z = 0;//to match the file size and file name
+	for(int i = 7 + input_file_num; i < argc; i = i+2)
+	{
+		out_file_size[z++] = ConvertToInt(argv[i+1]);
+	}
+	do
+	{
+		int t = 0;
+		for(int i = 7 + input_file_num; i < argc; i = i+2)
+		{
+			string name2 = argv[i];
+			if(name2.compare("finished") == 0)continue;//If a file is finished , don't open it any more	
+			left = out_file_size[t++] - j * w_unit;
+			if(left < w_unit)
+			{
+				WriteFromEnd(argv[i], left);
+                                flag2 = flag2 + 1;
+                                cout<<argv[i]<<" finished writing"<<endl;
+                                argv[i]=(char*)"finished";
+			}
+			else WriteFromEnd(argv[i], w_unit);
+		}
+		j++;
+	}while(flag2 != output_file_num);
+
+	cout << "finish reading and writing!"<<endl;
+
+	for(long i = 0; i <= memory_size;)
+        {
+                *(p_head + i) = 'a';//fill all the page with minimum cost
+                i += page_size;
+        }
+
+
+        free(p_head);
+        p_head = NULL;
+        p = NULL;
+	
+	//Consume CPU
+	cpu_time_used = double(clock() - start) * 1000 / CLOCKS_PER_SEC;
+	while((cpu_time_used < CPU_time))
+	{
+		for(int i = 0; i < (CPU_time - cpu_time_used); i++)
+		{
+			RunCPU();
+		}
+		cpu_time_used = double(clock() - start) * 1000 / CLOCKS_PER_SEC;		
+	}
+	printf("CPU time: %fms\n", cpu_time_used);
+	getrusage(RUSAGE_SELF, &rused);
+	printf("mem usage: %ld KB\n", rused.ru_maxrss);
+	int s_time = exe_time - GetTime() + t1;
+	if(s_time > 0)sleep(s_time);
+	printf("exe time: %f\n", GetTime() - t1);
+	return 0;
+}
